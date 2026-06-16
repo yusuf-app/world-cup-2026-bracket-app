@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>2026 Dünya Kupası Grup Tahmini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#d7aa4a;--gold2:#f0c76a;--row1:#2d2d2d;--row2:#151515}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#222 0%,#101010 35%,#050505 100%);color:white;font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+.app{max-width:520px;margin:0 auto;padding:18px 14px 28px}
+.hero{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.brand{color:var(--gold);font-weight:900;font-size:26px;letter-spacing:1px;text-shadow:0 2px 0 #000}
+.badge{border:1px solid var(--gold);color:var(--gold2);padding:6px 10px;border-radius:999px;font-size:13px}
+.progress{height:8px;background:#222;border-radius:999px;overflow:hidden;margin-bottom:22px}
+.progress span{display:block;height:100%;width:8%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:.25s}
+.group-card{border:1px solid #555;border-radius:0 18px 8px 0;background:rgba(20,20,20,.92);box-shadow:0 18px 50px rgba(0,0,0,.45);position:relative}
+.group-title{position:absolute;top:-19px;left:50%;transform:translateX(-50%);background:linear-gradient(#efc968,#bd8d32);color:#0b1117;font-weight:900;padding:7px 22px;border-radius:9px 9px 4px 4px;box-shadow:0 3px 0 #6d4d19;font-size:20px;white-space:nowrap}
+.teams{padding-top:32px;overflow:hidden}
+.team{display:flex;align-items:center;gap:12px;min-height:62px;padding:8px 12px;font-weight:900;font-size:21px;letter-spacing:.4px;text-shadow:0 2px 0 #000;touch-action:none;user-select:none}
+.team:nth-child(odd){background:linear-gradient(90deg,var(--row1),#252525)}
+.team:nth-child(even){background:linear-gradient(90deg,var(--row2),#111)}
+.team.dragging{opacity:.45;transform:scale(.98)}
+.rank{width:34px;height:34px;border-radius:50%;background:var(--gold);color:#111;display:flex;align-items:center;justify-content:center;font-size:17px;text-shadow:none;box-shadow:0 2px 0 #7a561b;flex:0 0 auto}
+.flag{width:40px;height:40px;border-radius:50%;overflow:hidden;flex:0 0 auto;box-shadow:0 0 0 1.5px rgba(255,255,255,.55),0 2px 6px #000;background:#222}
+.flag img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.08)}
+.handle{margin-left:auto;color:#aaa;font-size:22px}
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+button{border:0;border-radius:12px;padding:13px 10px;font-size:17px;font-weight:800;background:#2b2b2b;color:white}
+button.gold{background:linear-gradient(#efc968,#bd8d32);color:#101010;grid-column:1/3}
+.hint{text-align:center;color:#bbb;font-size:13px;margin:12px 0 4px}
+.result{margin-top:18px;display:none}
+.result-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.result-card{border:1px solid #555;background:#151515;border-radius:12px;overflow:hidden}
+.result-card h3{margin:0;background:var(--gold);color:#111;padding:8px 12px}
+.result-card div{display:flex;align-items:center;gap:8px;padding:7px 12px;font-weight:800;border-top:1px solid #2b2b2b}
+.mini-flag{width:24px;height:24px;border-radius:50%;overflow:hidden;display:inline-block;background:#222;box-shadow:0 0 0 1px rgba(255,255,255,.45)}
+.mini-flag img{width:100%;height:100%;object-fit:cover;transform:scale(1.08)}
+.copy{margin-top:12px;width:100%;background:linear-gradient(#efc968,#bd8d32);color:#111}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111;border:1px solid var(--gold);color:var(--gold);padding:10px 16px;border-radius:999px;display:none;z-index:20}
+.footer{margin-top:26px;text-align:center;color:#777;font-size:12px;font-weight:700;letter-spacing:.3px}
+.welcome{position:fixed;inset:0;z-index:50;background:radial-gradient(circle at top,#242424 0%,#101010 42%,#050505 100%);display:flex;align-items:center;justify-content:center;padding:22px;color:#fff;transition:opacity .28s ease,visibility .28s ease;overflow:hidden}
+.welcome.hide{opacity:0;visibility:hidden;pointer-events:none}
+.welcome-flags{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.38;display:grid;grid-template-columns:repeat(8,1fr);grid-auto-rows:54px;align-content:center;justify-items:center;padding:18px 10px}
+.welcome-flags::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at center,rgba(5,5,5,.18) 0%,rgba(5,5,5,.42) 48%,rgba(5,5,5,.82) 100%)}
+.wflag{width:32px;height:32px;border-radius:50%;overflow:hidden;background:#222;box-shadow:0 0 0 1.3px rgba(215,170,74,.62),0 4px 12px rgba(0,0,0,.78);filter:saturate(1.04)}
+.wflag:nth-child(16n+1),.wflag:nth-child(16n+3),.wflag:nth-child(16n+6),.wflag:nth-child(16n+8){transform:translateY(-5px)}
+.wflag:nth-child(16n+10),.wflag:nth-child(16n+12),.wflag:nth-child(16n+14),.wflag:nth-child(16n+16){transform:translateY(5px)}
+.wflag img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.08)}
+.welcome-card{position:relative;z-index:1;width:min(100%,440px);text-align:center;border:1px solid rgba(215,170,74,.58);background:rgba(14,14,14,.9);backdrop-filter:blur(2px);border-radius:22px;padding:34px 22px 24px;box-shadow:0 22px 70px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.04)}
+.welcome-cup{font-size:58px;margin-bottom:10px;filter:drop-shadow(0 5px 8px #000)}
+.welcome-title{color:var(--gold);font-weight:900;font-size:36px;line-height:1.02;letter-spacing:.9px;text-shadow:0 3px 0 #000;margin-bottom:4px}
+.welcome-subtitle{color:#fff;font-weight:900;font-size:20px;letter-spacing:1.1px;text-shadow:0 2px 0 #000;margin-bottom:14px}
+.welcome-text{color:#ddd;font-size:16px;line-height:1.45;margin:0 auto 18px;max-width:330px}
+.welcome-pill{display:inline-block;border:1px solid var(--gold);color:var(--gold2);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:800;margin-bottom:18px}
+.start-btn{width:100%;border-radius:14px;padding:14px 12px;background:linear-gradient(#efc968,#bd8d32);color:#111;font-size:18px;font-weight:900}
+.welcome-copy{margin-top:18px;color:#777;font-size:12px;font-weight:700;letter-spacing:.25px}
+
+.capture-screen{display:none;position:fixed;inset:0;background:#050505;z-index:10;overflow:auto;padding:14px}
+.capture-inner{width:min(100%,1180px);aspect-ratio:16/9;margin:0 auto;background:radial-gradient(circle at top,#242424,#070707 62%);padding:22px;border:2px solid #333;color:#fff;display:flex;flex-direction:column}
+.capture-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.capture-title{font-size:clamp(24px,3.2vw,42px);font-weight:900;color:var(--gold);letter-spacing:1px;text-shadow:0 3px 0 #000}
+.capture-sub{font-size:clamp(12px,1.5vw,18px);color:#ddd;border:1px solid var(--gold);border-radius:999px;padding:7px 12px}
+.capture-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:10px;flex:1}
+.cap-card{border:1px solid #555;background:#151515;border-radius:0 12px 8px 8px;overflow:hidden;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.cap-card h3{margin:0;text-align:center;background:linear-gradient(#efc968,#bd8d32);color:#111;padding:5px;font-size:clamp(13px,1.55vw,19px)}
+.cap-team{display:flex;align-items:center;gap:7px;padding:5px 8px;font-weight:900;font-size:clamp(10px,1.25vw,15px);min-height:30px;border-top:1px solid #2d2d2d;text-shadow:0 1px 0 #000}
+.cap-team:nth-child(odd){background:#252525}
+.cap-team:nth-child(even){background:#111}
+.cap-rank{color:var(--gold);width:21px;text-align:right}
+.cap-flag{width:26px;height:26px;border-radius:50%;overflow:hidden;background:#222;flex:0 0 auto;box-shadow:0 0 0 1px rgba(255,255,255,.45)}
+.cap-flag img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.08)}
+.capture-actions{position:fixed;right:16px;bottom:16px;display:flex;gap:8px;z-index:11}
+.capture-actions button{background:linear-gradient(#efc968,#bd8d32);color:#111}
+@media(min-width:780px){.app{max-width:1080px}.result-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* TURNUVA AĞACI */
+.ko{display:none;margin-top:26px;border-top:1px solid #333;padding-top:18px}
+.ko-title{color:var(--gold);font-size:25px;font-weight:900;margin-bottom:8px;text-align:center;width:100%}
+.ko-head{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}.home-mini{display:none}
+.third-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+.third{display:flex;align-items:center;gap:10px;background:#1d1d1d;border:1px solid #444;border-radius:12px;padding:10px;font-weight:900}
+.third.selected{border-color:var(--gold);box-shadow:0 0 0 2px rgba(215,170,74,.25)}
+.ko-round{margin-top:18px}.ko-round h3{color:var(--gold);margin:0 0 10px;text-align:center}
+.match{background:#151515;border:1px solid #444;border-radius:12px;margin:10px 0;overflow:hidden}
+.match-head{background:#2a2a2a;color:#bbb;font-weight:800;padding:7px 10px;font-size:13px}
+.side{display:flex;align-items:center;gap:8px;padding:10px;border-top:1px solid #2c2c2c;font-weight:900;cursor:pointer}
+.side.win{background:linear-gradient(90deg,rgba(215,170,74,.32),rgba(215,170,74,.06));color:#fff}
+.ko-flag{width:28px;height:28px;border-radius:50%;overflow:hidden;background:#222;box-shadow:0 0 0 1.5px rgba(255,255,255,.55),0 2px 6px #000;flex:0 0 auto}
+.ko-flag img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.08)}
+.champion{display:none;text-align:center;margin-top:20px;padding:18px;border:1px solid var(--gold);border-radius:16px;background:#151515}
+.champion .cup{font-size:42px}.champion h2{color:var(--gold);margin:8px 0}
+@media(min-width:780px){.third-grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="welcome" id="welcome">
+  <div class="welcome-flags" id="welcomeFlags"></div>
+  <div class="welcome-card">
+    <div class="welcome-cup">🏆</div>
+    <div class="welcome-title main-title">2026 DÜNYA KUPASI</div>
+    <div class="welcome-subtitle">TURNUVA AĞACI OLUŞTURUCU</div>
+    <div class="welcome-pill">48 TAKIM • 12 GRUP</div>
+    <p class="welcome-text">Grup sıralamalarını oluştur, turnuva ağacını tamamla ve şampiyonunu seç.</p>
+    <button class="start-btn" onclick="startApp()">TAHMİNE BAŞLA</button>
+    <div class="welcome-copy">© 2026 yusuf-app • All Rights Reserved</div>
+  </div>
+</div>
+<div class="app">
+<div class="hero"><div class="brand">GRUPLAR</div><div class="badge" id="counter">1 / 12</div></div>
+<div class="progress"><span id="bar"></span></div>
+<div class="group-card"><div class="group-title" id="groupTitle">A GRUBU</div><div class="teams" id="teams"></div></div>
+<div class="hint">Takımı basılı tutup sürükle. Üste koyduğun 1. olur.</div>
+<div class="nav">
+<button onclick="prevGroup()">◀ Önceki Grup</button>
+<button onclick="nextGroup()">Sonraki Grup ▶</button>
+<button class="gold" onclick="finish()">Tahmini Kaydet ve Sonucu Göster</button>
+</div>
+<div class="result" id="result">
+<button class="copy" onclick="copyResult()">Sonucu Kopyala</button>
+<button class="copy" onclick="openCapture()">Çıktı Ekranını Aç</button>
+<button class="copy" onclick="downloadPNG()">PNG Olarak İndir</button>
+<button class="copy" onclick="startTournament()">Turnuva Ağacına Geç</button>
+<div class="result-grid" id="resultGrid"></div>
+</div>
+
+<div class="ko" id="ko">
+  <div class="ko-head"><div class="ko-title">TURNUVA AĞACI</div></div>
+  <div id="thirdStage">
+    <div class="hint">12 grup üçüncüsünden Son 32'ye kalacak en iyi 8 takımı seç.</div>
+    <div class="third-grid" id="thirdGrid"></div>
+    <button class="copy" onclick="buildRound32()">Son 32 Eşleşmelerini Oluştur</button>
+  </div>
+  <div id="bracket"></div>
+  <div class="champion" id="champion"></div>
+  <button class="copy" id="bracketPngBtn" style="display:none" onclick="downloadBracketPNG()">Turnuva Ağacı PNG İndir</button>
+</div>
+<div class="footer">© 2026 yusuf-app • All Rights Reserved</div>
+</div>
+
+<div class="capture-screen" id="captureScreen">
+<div class="capture-inner" id="captureArea">
+  <div class="capture-head">
+    <div class="capture-title">2026 DÜNYA KUPASI TAHMİNİ</div>
+    <div class="capture-sub">GRUP SIRALAMALARI</div>
+  </div>
+  <div class="capture-grid" id="captureGrid"></div>
+</div>
+<div class="capture-actions">
+  <button onclick="closeCapture()">Kapat</button>
+  <button onclick="downloadPNG()">PNG İndir</button>
+</div>
+</div>
+
+<div class="toast" id="toast">Kopyalandı</div>
+<script>
+const base="https://flagcdn.com/w160/";
+const groups={
+"A":[["mx","MEKSİKA"],["za","GÜNEY AFRİKA"],["kr","GÜNEY KORE"],["cz","ÇEKYA"]],
+"B":[["ca","KANADA"],["ba","BOSNA HERSEK"],["qa","KATAR"],["ch","İSVİÇRE"]],
+"C":[["br","BREZİLYA"],["ma","FAS"],["ht","HAİTİ"],["gb-sct","İSKOÇYA"]],
+"D":[["tr","TÜRKİYE"],["us","ABD"],["py","PARAGUAY"],["au","AVUSTRALYA"]],
+"E":[["de","ALMANYA"],["cw","CURAÇAO"],["ci","FİLDİŞİ SAHİLİ"],["ec","EKVADOR"]],
+"F":[["nl","HOLLANDA"],["jp","JAPONYA"],["se","İSVEÇ"],["tn","TUNUS"]],
+"G":[["be","BELÇİKA"],["eg","MISIR"],["ir","İRAN"],["nz","YENİ ZELANDA"]],
+"H":[["es","İSPANYA"],["cv","YEŞİL BURUN A."],["sa","S. ARABİSTAN"],["uy","URUGUAY"]],
+"I":[["fr","FRANSA"],["sn","SENEGAL"],["iq","IRAK"],["no","NORVEÇ"]],
+"J":[["ar","ARJANTİN"],["dz","CEZAYİR"],["at","AVUSTURYA"],["jo","ÜRDÜN"]],
+"K":[["pt","PORTEKİZ"],["cd","KDC"],["uz","ÖZBEKİSTAN"],["co","KOLOMBİYA"]],
+"L":[["gb-eng","İNGİLTERE"],["hr","HIRVATİSTAN"],["gh","GANA"],["pa","PANAMA"]]
+};
+const keys=Object.keys(groups);let current=0;let saved=JSON.parse(localStorage.getItem("wc2026_saved_v4")||"{}");
+let thirdSelected=[],round32=[],rounds={};
+function flagUrl(code){return base+code+".png"}
+function getArr(g){return saved[g]||groups[g]}
+function render(){const g=keys[current];document.getElementById("groupTitle").textContent=g+" GRUBU";document.getElementById("counter").textContent=(current+1)+" / "+keys.length;document.getElementById("bar").style.width=((current+1)/keys.length*100)+"%";const box=document.getElementById("teams");box.innerHTML="";getArr(g).forEach((team,i)=>{const el=document.createElement("div");el.className="team";el.draggable=true;el.dataset.code=team[0];el.dataset.name=team[1];el.innerHTML='<div class="rank">'+(i+1)+'</div><div class="flag"><img src="'+flagUrl(team[0])+'"></div><div>'+team[1]+'</div><div class="handle">☰</div>';box.appendChild(el)});enableDrag()}
+function saveCurrent(){saved[keys[current]]=[...document.querySelectorAll(".team")].map(x=>[x.dataset.code,x.dataset.name]);localStorage.setItem("wc2026_saved_v4",JSON.stringify(saved))}
+function renumber(){document.querySelectorAll(".rank").forEach((r,i)=>r.textContent=i+1)}
+function enableDrag(){const box=document.getElementById("teams");let dragEl=null;[...box.children].forEach(el=>{el.addEventListener("dragstart",()=>{dragEl=el;el.classList.add("dragging")});el.addEventListener("dragend",()=>{el.classList.remove("dragging");renumber();saveCurrent()});el.addEventListener("dragover",e=>{e.preventDefault();const after=getDragAfterElement(box,e.clientY);if(after==null)box.appendChild(dragEl);else box.insertBefore(dragEl,after)});el.addEventListener("touchstart",e=>{dragEl=el;el.classList.add("dragging")},{passive:false});el.addEventListener("touchmove",e=>{e.preventDefault();const y=e.touches[0].clientY;const after=getDragAfterElement(box,y);if(after==null)box.appendChild(dragEl);else box.insertBefore(dragEl,after);renumber()},{passive:false});el.addEventListener("touchend",()=>{el.classList.remove("dragging");renumber();saveCurrent()})})}
+function getDragAfterElement(container,y){const els=[...container.querySelectorAll(".team:not(.dragging)")];return els.reduce((closest,child)=>{const box=child.getBoundingClientRect();const offset=y-box.top-box.height/2;if(offset<0&&offset>closest.offset)return{offset:offset,element:child};return closest},{offset:Number.NEGATIVE_INFINITY}).element}
+function nextGroup(){saveCurrent();if(current<keys.length-1){current++;render()}}
+function prevGroup(){saveCurrent();if(current>0){current--;render()}}
+function finish(){saveCurrent();const grid=document.getElementById("resultGrid");grid.innerHTML="";keys.forEach(g=>{const card=document.createElement("div");card.className="result-card";let html="<h3>"+g+" GRUBU</h3>";getArr(g).forEach((t,i)=>html+='<div>'+(i+1)+'. <span class="mini-flag"><img src="'+flagUrl(t[0])+'"></span> '+t[1]+'</div>');card.innerHTML=html;grid.appendChild(card)});document.getElementById("result").style.display="block";document.getElementById("result").scrollIntoView({behavior:"smooth"})}
+function buildCapture(){saveCurrent();const grid=document.getElementById("captureGrid");grid.innerHTML="";keys.forEach(g=>{const card=document.createElement("div");card.className="cap-card";let html="<h3>"+g+" GRUBU</h3>";getArr(g).forEach((t,i)=>html+='<div class="cap-team"><span class="cap-rank">'+(i+1)+'.</span><span class="cap-flag"><img src="'+flagUrl(t[0])+'"></span><span>'+t[1]+'</span></div>');card.innerHTML=html;grid.appendChild(card)})}
+function openCapture(){buildCapture();document.getElementById("captureScreen").style.display="block"}
+function closeCapture(){document.getElementById("captureScreen").style.display="none"}
+function copyResult(){let txt="2026 Dünya Kupası Grup Tahminim\\n\\n";keys.forEach(g=>{txt+=g+" GRUBU\\n";getArr(g).forEach((t,i)=>txt+=(i+1)+". "+t[1]+"\\n");txt+="\\n"});navigator.clipboard.writeText(txt);const toast=document.getElementById("toast");toast.textContent="Kopyalandı";toast.style.display="block";setTimeout(()=>toast.style.display="none",1600)}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function loadFlag(code){return new Promise(resolve=>{const img=new Image();img.crossOrigin="anonymous";img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=flagUrl(code)})}
+async function downloadPNG(){
+  saveCurrent();
+  const allCodes=[];keys.forEach(g=>getArr(g).forEach(t=>allCodes.push(t[0])));
+  const imgs={};await Promise.all([...new Set(allCodes)].map(async c=>imgs[c]=await loadFlag(c)));
+  const W=1920,H=1080,canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
+  canvas.width=W;canvas.height=H;
+  let grad=ctx.createRadialGradient(W/2,0,80,W/2,H/2,1200);
+  grad.addColorStop(0,"#2a2a2a");grad.addColorStop(.45,"#101010");grad.addColorStop(1,"#050505");
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="#d7aa4a";ctx.font="900 54px Oswald, Arial";ctx.fillText("2026 DÜNYA KUPASI TAHMİNİM",70,92);
+  ctx.strokeStyle="#d7aa4a";ctx.lineWidth=2;roundRect(ctx,1535,40,315,54,27);ctx.stroke();
+  ctx.fillStyle="#ddd";ctx.font="900 25px Oswald, Arial";ctx.fillText("GRUP SIRALAMALARI",1565,76);
+  const cols=4,gap=22,cardW=(W-140-gap*3)/4,cardH=(H-145-gap*2)/3;
+  keys.forEach((g,idx)=>{
+    const col=idx%4,row=Math.floor(idx/4),x=70+col*(cardW+gap),y=125+row*(cardH+gap);
+    ctx.fillStyle="#151515";roundRect(ctx,x,y,cardW,cardH,16);ctx.fill();ctx.strokeStyle="#555";ctx.stroke();
+    let hg=ctx.createLinearGradient(x,y,x,y+44);hg.addColorStop(0,"#efc968");hg.addColorStop(1,"#bd8d32");
+    ctx.fillStyle=hg;roundRect(ctx,x,y,cardW,44,12);ctx.fill();
+    ctx.fillStyle="#111";ctx.font="900 27px Arial";ctx.textAlign="center";ctx.fillText(g+" GRUBU",x+cardW/2,y+31);ctx.textAlign="left";
+    getArr(g).forEach((t,i)=>{
+      const ry=y+50+i*43;
+      ctx.fillStyle=i%2===0?"#252525":"#111";roundRect(ctx,x+8,ry,cardW-16,36,8);ctx.fill();
+      ctx.fillStyle="#d7aa4a";ctx.font="900 22px Arial";ctx.fillText((i+1)+".",x+24,ry+25);
+      ctx.save();ctx.beginPath();ctx.arc(x+73,ry+18,16,0,Math.PI*2);ctx.clip();
+      if(imgs[t[0]]) ctx.drawImage(imgs[t[0]],x+51,ry+2,44,32); else {ctx.fillStyle="#fff";ctx.fillRect(x+57,ry+2,32,32)}
+      ctx.restore();
+      ctx.textAlign="left";ctx.fillStyle="#fff";ctx.font="900 22px Arial";ctx.fillText(t[1],x+100,ry+25);
+    });
+  });
+  const a=document.createElement("a");a.download="dunya-kupasi-2026-tahmin.png";a.href=canvas.toDataURL("image/png");a.click();
+  const toast=document.getElementById("toast");toast.textContent="PNG indirildi";toast.style.display="block";setTimeout(()=>toast.style.display="none",1600);
+}
+
+function teamObj(g,pos){const t=getArr(g)[pos-1];return {code:t[0],name:t[1],seed:g+pos,group:g,pos:pos}}
+function teamHTML(t){return '<span class="ko-flag"><img src="'+flagUrl(t.code)+'"></span><span>'+t.name+'</span><small style="margin-left:auto;color:#aaa">'+t.seed+'</small>'}
+function startTournament(){finish();document.getElementById("ko").style.display="block";document.getElementById("thirdStage").style.display="block";document.getElementById("bracket").innerHTML="";document.getElementById("champion").style.display="none";document.getElementById("bracketPngBtn").style.display="none";thirdSelected=[];const grid=document.getElementById("thirdGrid");grid.innerHTML="";keys.forEach(g=>{const t=teamObj(g,3);const d=document.createElement("div");d.className="third";d.dataset.group=g;d.innerHTML='<span class="ko-flag"><img src="'+flagUrl(t.code)+'"></span><span>'+g+'3 - '+t.name+'</span>';d.onclick=()=>toggleThird(d,g);grid.appendChild(d)});document.getElementById("ko").scrollIntoView({behavior:"smooth"})}
+function toggleThird(el,g){if(el.classList.contains("selected")){el.classList.remove("selected");thirdSelected=thirdSelected.filter(x=>x!==g)}else{if(thirdSelected.length>=8){const toast=document.getElementById("toast");toast.textContent="En fazla 8 üçüncü seçilebilir";toast.style.display="block";setTimeout(()=>toast.style.display="none",1600);return}el.classList.add("selected");thirdSelected.push(g)}}
+const rd32Defs=[["74","E1",["A","B","C","D","F"]],["77","I1",["C","D","F","G","H"]],["73","A2","D2"],["75","F1","C2"],["83","K2","L2"],["84","H1","J2"],["81","D1",["B","E","F","I","J"]],["82","G1",["A","E","H","I","J"]],["76","C1","F2"],["78","E2","I2"],["79","A1",["C","E","F","H","I"]],["80","L1",["E","H","I","J","K"]],["86","J1","H2"],["88","B2","G2"],["85","B1",["E","F","G","I","J"]],["87","K1",["D","E","I","J","L"]]];
+function resolveSeed(seed){const g=seed[0],p=parseInt(seed.slice(1));return teamObj(g,p)}
+function assignThirds(){const thirdMatches=rd32Defs.map((m,i)=>Array.isArray(m[2])?{idx:i,cands:m[2]}:null).filter(Boolean);function backtrack(k,used,map){if(k===thirdMatches.length)return map;const item=thirdMatches[k];for(const g of item.cands){if(thirdSelected.includes(g)&&!used.includes(g)){const res=backtrack(k+1,[...used,g],{...map,[item.idx]:g});if(res)return res}}return null}return backtrack(0,[],{})}
+function buildRound32(){if(thirdSelected.length!==8){const toast=document.getElementById("toast");toast.textContent="Tam 8 üçüncü seçmelisin";toast.style.display="block";setTimeout(()=>toast.style.display="none",1600);return}const thirdMap=assignThirds();if(!thirdMap){const toast=document.getElementById("toast");toast.textContent="Bu üçüncü kombinasyonu eşleşme adaylarına uymadı";toast.style.display="block";setTimeout(()=>toast.style.display="none",1800);return}round32=rd32Defs.map((m,i)=>{let a=resolveSeed(m[1]);let b=Array.isArray(m[2])?teamObj(thirdMap[i],3):resolveSeed(m[2]);return {no:m[0],a:a,b:b,winner:null}});rounds={r32:round32,r16:[],qf:[],sf:[],final:[]};document.getElementById("thirdStage").style.display="none";renderRound("r32","SON 32 TURU",round32)}
+function renderRound(key,title,matches){const wrap=document.getElementById("bracket");let sec=document.getElementById("round_"+key);if(!sec){sec=document.createElement("div");sec.id="round_"+key;sec.className="ko-round";wrap.appendChild(sec)}sec.innerHTML="<h3>"+title+"</h3>";matches.forEach((m,i)=>{const div=document.createElement("div");div.className="match";div.innerHTML='<div class="match-head">Maç '+m.no+'</div><div class="side '+(m.winner===m.a?'win':'')+'" onclick="pickWinner(\''+key+'\','+i+',\'a\')">'+teamHTML(m.a)+'</div><div class="side '+(m.winner===m.b?'win':'')+'" onclick="pickWinner(\''+key+'\','+i+',\'b\')">'+teamHTML(m.b)+'</div>';sec.appendChild(div)})}
+function roundTitle(k){return {r32:"SON 32 TURU",r16:"SON 16 TURU",qf:"ÇEYREK FİNAL",sf:"YARI FİNAL",final:"FİNAL"}[k]}
+function pickWinner(key,i,side){rounds[key][i].winner=rounds[key][i][side];renderRound(key,roundTitle(key),rounds[key]);if(rounds[key].every(m=>m.winner))nextRound(key)}
+function nextRound(key){const order={r32:"r16",r16:"qf",qf:"sf",sf:"final"};const next=order[key];if(!next){showChampion(rounds.final[0].winner);return}const winners=rounds[key].map(m=>m.winner),newMatches=[];for(let i=0;i<winners.length;i+=2)newMatches.push({no:next.toUpperCase()+" "+(i/2+1),a:winners[i],b:winners[i+1],winner:null});rounds[next]=newMatches;renderRound(next,roundTitle(next),newMatches);document.getElementById("round_"+next).scrollIntoView({behavior:"smooth"})}
+function showChampion(t){const c=document.getElementById("champion");c.innerHTML='<div class="cup">🏆</div><h2>ŞAMPİYON</h2><div style="display:flex;justify-content:center;align-items:center;gap:10px;font-size:25px;font-weight:900"><span class="ko-flag"><img src="'+flagUrl(t.code)+'"></span>'+t.name+'</div>';c.style.display="block";document.getElementById("bracketPngBtn").style.display="block";c.scrollIntoView({behavior:"smooth"})}
+
+
+async function ensureCanvasFonts(){
+  if(document.fonts && document.fonts.load){
+    try{
+      await document.fonts.load('700 40px Oswald');
+      await document.fonts.ready;
+    }catch(e){}
+  }
+}
+
+async function downloadBracketPNG(){
+  await ensureCanvasFonts();
+  const all=[];
+  ["r32","r16","qf","sf","final"].forEach(k=>(rounds[k]||[]).forEach(m=>{all.push(m.a.code,m.b.code);if(m.winner)all.push(m.winner.code)}));
+  const imgs={};await Promise.all([...new Set(all)].map(async c=>imgs[c]=await loadFlag(c)));
+
+  const W=1920,H=1080,canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
+  canvas.width=W;canvas.height=H;
+
+  let grad=ctx.createRadialGradient(W/2,80,80,W/2,H/2,1220);
+  grad.addColorStop(0,"#252525");grad.addColorStop(.46,"#101010");grad.addColorStop(1,"#050505");
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle="#d7aa4a";
+  ctx.font="700 42px Oswald, Arial";
+  ctx.fillText("2026 DÜNYA KUPASI TAHMİNİM",60,72);
+
+  ctx.strokeStyle="#d7aa4a";
+  ctx.lineWidth=2;
+  roundRect(ctx,1560,32,300,48,24);
+  ctx.stroke();
+  ctx.fillStyle="#ddd";
+  ctx.font="700 24px Oswald, Arial";
+  ctx.textAlign="center";
+  ctx.fillText("TURNUVA AĞACI",1710,64);
+  ctx.textAlign="left";
+
+  // v14 merkez düzeni: yarı finaller çeyrek final çiftlerinin ortasına alındı,
+  // final küçültüldü ve şampiyon alanı bağımsız bırakıldı.
+  const boxW=244,boxH=58;
+  const yR32=[138,240,342,444,546,648,750,852];
+  const yR16=[189,393,597,801];
+  const yQF=[300,720];
+  const leftX=[42,300,565];
+  const rightX=[1634,1376,1111];
+
+  drawColumnTitle(ctx,"SON 32",leftX[0],120,boxW);
+  drawColumnTitle(ctx,"SON 16",leftX[1],171,boxW);
+  drawColumnTitle(ctx,"ÇEYREK FİNAL",leftX[2],282,boxW);
+  drawColumnTitle(ctx,"ÇEYREK FİNAL",rightX[2],282,boxW);
+  drawColumnTitle(ctx,"SON 16",rightX[1],171,boxW);
+  drawColumnTitle(ctx,"SON 32",rightX[0],120,boxW);
+
+  const leftR32=rounds.r32.slice(0,8);
+  const rightR32=rounds.r32.slice(8,16);
+  const r16L=rounds.r16.slice(0,4), r16R=rounds.r16.slice(4,8);
+  const qfL=rounds.qf.slice(0,2), qfR=rounds.qf.slice(2,4);
+
+  const nR32L=drawColumnPNG(ctx,leftR32,leftX[0],yR32,boxW,boxH,imgs);
+  const nR16L=drawColumnPNG(ctx,r16L,leftX[1],yR16,boxW,boxH,imgs);
+  const nQFL=drawColumnPNG(ctx,qfL,leftX[2],yQF,boxW,boxH,imgs);
+  const nQFR=drawColumnPNG(ctx,qfR,rightX[2],yQF,boxW,boxH,imgs);
+  const nR16R=drawColumnPNG(ctx,r16R,rightX[1],yR16,boxW,boxH,imgs);
+  const nR32R=drawColumnPNG(ctx,rightR32,rightX[0],yR32,boxW,boxH,imgs);
+
+  connectPairsPNG(ctx,nR32L,nR16L,"right");
+  connectPairsPNG(ctx,nR16L,nQFL,"right");
+  connectPairsPNG(ctx,nR32R,nR16R,"left");
+  connectPairsPNG(ctx,nR16R,nQFR,"left");
+
+  const sfL=rounds.sf && rounds.sf[0] ? rounds.sf[0] : null;
+  const sfR=rounds.sf && rounds.sf[1] ? rounds.sf[1] : null;
+  const finalMatch=rounds.final && rounds.final[0] ? rounds.final[0] : null;
+
+  const semiW=250, semiH=64;
+  // v15: yarı finaller daha dışta; çeyrek final çiftlerinin tam orta aksına yakın.
+  const leftSemi={x:640,y:505,w:semiW,h:semiH};
+  const rightSemi={x:1030,y:505,w:semiW,h:semiH};
+  const finalBox={x:855,y:662,w:210,h:74};
+  const champBox={x:820,y:858,w:280,h:70};
+
+  drawColumnTitle(ctx,"YARI FİNAL",leftSemi.x,leftSemi.y-24,semiW);
+  drawColumnTitle(ctx,"YARI FİNAL",rightSemi.x,rightSemi.y-24,semiW);
+  drawColumnTitle(ctx,"FİNAL",finalBox.x,finalBox.y-24,finalBox.w);
+
+  // Çizgiler önce çiziliyor, kutular sonra basılıyor; yazıların üstüne çizgi binmiyor.
+  if(sfL) connectQuarterColumnToSemiVertical(ctx,nQFL,leftSemi,"left");
+  if(sfR) connectQuarterColumnToSemiVertical(ctx,nQFR,rightSemi,"right");
+  if(finalMatch) connectSemisToSmallFinal(ctx,leftSemi,rightSemi,finalBox);
+  if(finalMatch && finalMatch.winner) connectFinalToChampion(ctx,finalBox,champBox);
+
+  if(sfL) drawMatchBoxPNG(ctx,sfL,leftSemi.x,leftSemi.y,leftSemi.w,leftSemi.h,imgs);
+  if(sfR) drawMatchBoxPNG(ctx,sfR,rightSemi.x,rightSemi.y,rightSemi.w,rightSemi.h,imgs);
+  if(finalMatch) drawCompactFinalBoxPNG(ctx,finalMatch,finalBox.x,finalBox.y,finalBox.w,finalBox.h,imgs);
+  if(finalMatch && finalMatch.winner) drawChampionCleanV14(ctx,finalMatch.winner,champBox.x,champBox.y,champBox.w,champBox.h,imgs);
+
+  const a=document.createElement("a");
+  a.download="dunya-kupasi-2026-turnuva-agaci.png";
+  a.href=canvas.toDataURL("image/png");
+  a.click();
+  showToast("Turnuva ağacı PNG indirildi");
+}
+
+function showToast(msg){
+  const t=document.getElementById("toast");
+  if(!t)return;
+  t.textContent=msg;t.style.display="block";setTimeout(()=>t.style.display="none",1600);
+}
+
+function drawColumnTitle(ctx,title,x,y,w){
+  ctx.fillStyle="#d7aa4a";
+  ctx.font="700 24px Oswald, Arial";
+  ctx.textAlign="center";
+  ctx.fillText(title,x+w/2,y);
+  ctx.textAlign="left";
+}
+
+function drawColumnPNG(ctx,matches,x,ys,w,h,imgs){
+  const nodes=[];
+  matches.forEach((m,i)=>{
+    drawMatchBoxPNG(ctx,m,x,ys[i],w,h,imgs);
+    nodes.push({x:x,y:ys[i],w:w,h:h});
+  });
+  return nodes;
+}
+
+function fitTextPNG(ctx,text,x,y,maxWidth,fontSize=18){
+  let fs=fontSize;
+  ctx.font="900 "+fs+"px Arial";
+  while(ctx.measureText(text).width>maxWidth && fs>13){fs--;ctx.font="900 "+fs+"px Arial";}
+  ctx.fillText(text,x,y);
+}
+
+function drawMatchBoxPNG(ctx,m,x,y,w,h,imgs){
+  ctx.fillStyle="#151515";
+  roundRect(ctx,x,y,w,h,14);
+  ctx.fill();
+  ctx.strokeStyle="#555";
+  ctx.lineWidth=1.6;
+  ctx.stroke();
+
+  // Eski okunaklılık korunuyor: iki satır ferah, bayrak ve yazı arası net.
+  drawTeamPNG(ctx,m.a,x+13,y+24,imgs,m.winner&&m.winner.name===m.a.name,w-26,25);
+  drawTeamPNG(ctx,m.b,x+13,y+50,imgs,m.winner&&m.winner.name===m.b.name,w-26,25);
+}
+
+function drawTeamPNG(ctx,t,x,y,imgs,win,maxW,rowH=25){
+  if(win){
+    ctx.fillStyle="rgba(215,170,74,.30)";
+    roundRect(ctx,x-7,y-rowH+4,maxW,rowH,9);
+    ctx.fill();
+  }
+  const r=Math.min(13,Math.max(11,rowH/2));
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x+13,y-9,r,0,Math.PI*2);
+  ctx.clip();
+  if(imgs[t.code])ctx.drawImage(imgs[t.code],x-8,y-23,42,29);
+  ctx.restore();
+  ctx.fillStyle=win?"#d7aa4a":"#fff";
+  ctx.textAlign="left";
+  fitTextPNG(ctx,t.name,x+38,y-2,maxW-48,18);
+}
+
+function connectPairsPNG(ctx,fromNodes,toNodes,dir){
+  ctx.strokeStyle="#d7aa4a";
+  ctx.lineWidth=2.7;
+  toNodes.forEach((to,i)=>{
+    const a=fromNodes[i*2],b=fromNodes[i*2+1];
+    if(!a||!b)return;
+    const x1=dir==="right"?a.x+a.w:a.x;
+    const x2=dir==="right"?to.x:to.x+to.w;
+    const mid=(x1+x2)/2;
+    const ay=a.y+a.h/2, by=b.y+b.h/2, ty=to.y+to.h/2;
+    ctx.beginPath();
+    ctx.moveTo(x1,ay);ctx.lineTo(mid,ay);ctx.lineTo(mid,by);ctx.lineTo(x1,by);
+    ctx.moveTo(mid,(ay+by)/2);ctx.lineTo(x2,ty);
+    ctx.stroke();
+  });
+}
+
+function connectQuarterColumnToSemiVertical(ctx,qNodes,semi,side){
+  if(!qNodes || qNodes.length<2)return;
+  ctx.strokeStyle="#d7aa4a";
+  ctx.lineWidth=3.0;
+  const q1=qNodes[0],q2=qNodes[1];
+
+  // Çeyrek final bağlantısı artık kutunun yanından değil;
+  // üst kutunun alt orta noktasından ve alt kutunun üst orta noktasından çıkıyor.
+  const qCenterX=q1.x+q1.w/2;
+  const topOutY=q1.y+q1.h;
+  const bottomOutY=q2.y;
+  const midY=(topOutY+bottomOutY)/2;
+  const semiInX=side==="left"?semi.x:semi.x+semi.w;
+  const semiY=semi.y+semi.h/2;
+
+  ctx.beginPath();
+  ctx.moveTo(qCenterX,topOutY);
+  ctx.lineTo(qCenterX,midY);
+  ctx.moveTo(qCenterX,bottomOutY);
+  ctx.lineTo(qCenterX,midY);
+  ctx.lineTo(semiInX,semiY);
+  ctx.stroke();
+}
+
+function connectSemisToSmallFinal(ctx,leftSemi,rightSemi,finalBox){
+  ctx.strokeStyle="#d7aa4a";
+  ctx.lineWidth=3.2;
+  // Yarı finalden finale çizgi normal maç kutusunun yanından çıkıyor.
+  const lOutX=leftSemi.x+leftSemi.w, lOutY=leftSemi.y+leftSemi.h/2;
+  const rOutX=rightSemi.x, rOutY=rightSemi.y+rightSemi.h/2;
+  const fLeftX=finalBox.x, fRightX=finalBox.x+finalBox.w, fY=finalBox.y+finalBox.h/2;
+  const lBendX=(lOutX+fLeftX)/2;
+  const rBendX=(rOutX+fRightX)/2;
+
+  ctx.beginPath();
+  ctx.moveTo(lOutX,lOutY);
+  ctx.lineTo(lBendX,lOutY);
+  ctx.lineTo(lBendX,fY);
+  ctx.lineTo(fLeftX,fY);
+
+  ctx.moveTo(rOutX,rOutY);
+  ctx.lineTo(rBendX,rOutY);
+  ctx.lineTo(rBendX,fY);
+  ctx.lineTo(fRightX,fY);
+  ctx.stroke();
+}
+
+function connectFinalToChampion(ctx,finalBox,champBox){
+  ctx.strokeStyle="#d7aa4a";
+  ctx.lineWidth=3.2;
+  const cx=finalBox.x+finalBox.w/2;
+  ctx.beginPath();
+  ctx.moveTo(cx,finalBox.y+finalBox.h);
+  ctx.lineTo(cx,champBox.y-56);
+  ctx.stroke();
+}
+
+function drawCompactFinalBoxPNG(ctx,m,x,y,w,h,imgs){
+  ctx.fillStyle="#151515";
+  roundRect(ctx,x,y,w,h,18);
+  ctx.fill();
+  ctx.strokeStyle="#d7aa4a";
+  ctx.lineWidth=3.0;
+  ctx.stroke();
+  drawTeamPNG(ctx,m.a,x+18,y+31,imgs,m.winner&&m.winner.name===m.a.name,w-36,26);
+  drawTeamPNG(ctx,m.b,x+18,y+60,imgs,m.winner&&m.winner.name===m.b.name,w-36,26);
+}
+
+function drawChampionCleanV14(ctx,winner,x,y,w,h,imgs){
+  ctx.fillStyle="#d7aa4a";
+  ctx.font="900 34px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("🏆",x+w/2,y-58);
+  ctx.font="700 24px Oswald, Arial";
+  ctx.fillText("ŞAMPİYON",x+w/2,y-25);
+
+  ctx.fillStyle="#151515";
+  roundRect(ctx,x,y,w,h,18);
+  ctx.fill();
+  ctx.strokeStyle="#d7aa4a";
+  ctx.lineWidth=3.0;
+  ctx.stroke();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x+58,y+h/2,23,0,Math.PI*2);
+  ctx.clip();
+  if(imgs[winner.code])ctx.drawImage(imgs[winner.code],x+21,y+h/2-26,74,52);
+  ctx.restore();
+
+  ctx.fillStyle="#fff";
+  ctx.textAlign="left";
+  fitTextPNG(ctx,winner.name,x+100,y+h/2+10,w-120,28);
+  ctx.textAlign="left";
+}
+
+function buildWelcomeFlags(){
+  const layer=document.getElementById("welcomeFlags");
+  if(!layer)return;
+  const codes=[];
+  keys.forEach(g=>groups[g].forEach(t=>codes.push(t[0])));
+  layer.innerHTML="";
+  const total=96;
+  for(let i=0;i<total;i++){
+    const code=codes[i%codes.length];
+    const d=document.createElement("div");
+    d.className="wflag";
+    d.innerHTML='<img src="'+flagUrl(code)+'">';
+    layer.appendChild(d);
+  }
+}
+
+function startApp(){
+  const w=document.getElementById("welcome");
+  if(w)w.classList.add("hide");
+}
+
+function goHome(){
+  const w=document.getElementById("welcome");
+  if(w)w.classList.remove("hide");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+buildWelcomeFlags();
+render();
+</script>
+</body>
+</html>
+<!-- v29: sadece turnuva agaci, yeni karsilama basligi -->
