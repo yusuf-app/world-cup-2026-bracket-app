@@ -1,0 +1,13 @@
+Copyright (c) 2026 Yusuf P.
+
+All rights reserved.
+
+This software and associated files are proprietary.
+
+No part of this software may be copied, modified,
+distributed, published, reverse engineered,
+or used commercially without prior written
+permission from the author.
+
+The software is shared publicly for demonstration
+and evaluation purposes only.
